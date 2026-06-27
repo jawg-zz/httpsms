@@ -7,23 +7,19 @@ services:
       POSTGRES_USER: dbusername
     volumes:
       - postgres:/var/lib/postgresql/data
-    ports:
-      - "5435:5432"
     restart: on-failure
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 30s
       timeout: 60s
       retries: 5
-      start_period: 5s
+      start_period: 60s
 
   redis:
     image: redis:latest
     command: redis-server
     volumes:
       - redis:/var/lib/redis
-    ports:
-      - "6379:6379"
     restart: on-failure
 
   api:
@@ -37,7 +33,12 @@ services:
       redis:
         condition: service_started
     env_file:
-      - ./api/.env
+      - .env
+    environment:
+      APP_PORT: "8000"
+    restart: unless-stopped
+    networks:
+      - dokploy-network
 
   web:
     build:
@@ -45,9 +46,15 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      api:
-        condition: service_started
+      - api
+    restart: unless-stopped
+    networks:
+      - dokploy-network
 
 volumes:
   redis:
   postgres:
+
+networks:
+  dokploy-network:
+    external: true
