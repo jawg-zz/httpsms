@@ -5,11 +5,8 @@ WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
 
-# Install pnpm
-RUN npm install -g pnpm
-
-# Allow native build scripts and skip husky (no .git in Docker context)
-RUN echo 'onlyBuiltDependencies=*' > .npmrc && HUSKY=0 pnpm install && rm .npmrc
+# Install pnpm v9 (avoids pnpm v10 build-approval system)
+RUN npm install -g pnpm@9 && HUSKY=0 pnpm install
 
 COPY . .
 
