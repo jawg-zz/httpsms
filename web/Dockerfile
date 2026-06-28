@@ -8,9 +8,14 @@ COPY package.json pnpm-lock.yaml ./
 # Install pnpm
 RUN npm install -g pnpm
 
-RUN pnpm install
+# Allow native build scripts and skip husky (no .git in Docker context)
+RUN echo 'onlyBuiltDependencies=*' > .npmrc && HUSKY=0 pnpm install && rm .npmrc
 
 COPY . .
+
+# Copy env vars for build (these get embedded into the JS bundle at nuxt generate time)
+COPY .env.production .env
+
 RUN pnpm run generate
 
 # production stage
