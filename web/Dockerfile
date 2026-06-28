@@ -9,11 +9,13 @@ COPY package.json pnpm-lock.yaml ./
 RUN npm install -g pnpm@9 && HUSKY=0 pnpm install
 
 COPY . .
-
-# Copy env vars for build (these get embedded into the JS bundle at nuxt generate time)
 COPY .env.production .env
 
-RUN pnpm run generate
+# Debug: check files exist
+RUN ls -la package.json && cat package.json | head -5
+
+# Use explicit npx path for nuxt generate
+RUN ./node_modules/.bin/nuxt generate
 
 # production stage
 FROM nginx:stable-alpine AS production
