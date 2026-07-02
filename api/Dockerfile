@@ -1,4 +1,4 @@
-FROM golang AS builder
+FROM golang:1.25-alpine AS builder
 
 ARG GIT_COMMIT
 ENV GIT_COMMIT=$GIT_COMMIT
@@ -19,7 +19,9 @@ RUN swag init --requiredByDefault --parseDependency --parseInternal
 
 RUN CGO_ENABLED=0 go build -ldflags "-X main.Version=$GIT_COMMIT" -o /bin/http-sms .
 
-FROM alpine:latest
+FROM alpine:3.20
+ENV ENV=local
+ENV GOTRACEBACK=all
 
 RUN apk add --no-cache curl && addgroup -S http-sms && adduser -S http-sms -G http-sms
 
